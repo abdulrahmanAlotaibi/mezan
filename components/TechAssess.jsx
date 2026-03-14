@@ -11,6 +11,20 @@ import { exportToWord } from '../lib/logic';
 import { Alert } from './Alert';
 import { HealthPanel } from './HealthPanel';
 
+const MOBILE_BREAKPOINT = 768;
+
+function useWindowSize() {
+  const [size, setSize] = useState([1024, 768]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const update = () => setSize([window.innerWidth, window.innerHeight]);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return size;
+}
+
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 const DARK = {
   bg:      '#09090d', bg2: '#0c0e15', bg3: '#131720',
@@ -156,7 +170,7 @@ function PillOne({ label, value, options, onChange, color, s, C: CC }) {
 }
 
 function G2({ children }) {
-  return <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:13 }}>{children}</div>;
+  return <div className="tech-assess-g2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:13 }}>{children}</div>;
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
@@ -503,6 +517,10 @@ export default function TechAssess() {
   const [theme, setTheme]       = useState('dark');
   const [saved, setSaved]       = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [winW] = useWindowSize();
+  const isMobile = winW <= MOBILE_BREAKPOINT;
 
   const rtl = lang === 'ar';
   const t   = T[lang];
@@ -574,10 +592,42 @@ export default function TechAssess() {
   };
 
   return (
-    <div style={{ display:'flex', height:'100vh', background:C.bg, fontFamily:font, color:C.text, overflow:'hidden', direction:rtl?'rtl':'ltr' }}>
+    <div className="tech-assess-root" style={{
+      display:'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      minHeight:'100vh',
+      height: isMobile ? 'auto' : '100vh',
+      background:C.bg,
+      fontFamily:font,
+      color:C.text,
+      overflow: isMobile ? 'auto' : 'hidden',
+      direction:rtl?'rtl':'ltr',
+    }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <div style={{ width:252, minWidth:252, background:C.sbBg, borderRight:rtl?'none':'1px solid '+C.border, borderLeft:rtl?'1px solid '+C.border:'none', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div
+        className="tech-assess-sidebar"
+        style={{
+          ...(isMobile ? {
+            position:'fixed',
+            top:0, left: rtl ? 'auto' : 0, right: rtl ? 0 : 'auto',
+            width: 260, maxWidth: '85vw',
+            height: '100vh',
+            zIndex: 1000,
+            transform: sidebarOpen ? 'translateX(0)' : (rtl ? 'translateX(100%)' : 'translateX(-100%)'),
+            transition: 'transform 0.2s ease',
+            boxShadow: sidebarOpen ? '4px 0 20px rgba(0,0,0,0.3)' : 'none',
+          } : {}),
+          width: isMobile ? 260 : 252,
+          minWidth: isMobile ? undefined : 252,
+          background: C.sbBg,
+          borderRight: rtl ? 'none' : '1px solid ' + C.border,
+          borderLeft: rtl ? '1px solid ' + C.border : 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
 
         {/* Logo */}
         <div style={{ padding:'15px 13px 10px', borderBottom:'1px solid '+C.border }}>
@@ -612,7 +662,7 @@ export default function TechAssess() {
             return (
               <div key={a.id}
                 style={{ padding:'7px 9px', borderRadius:6, cursor:'pointer', marginBottom:1, background:on?C.bg3:'transparent', border:on?'1px solid '+C.border2:'1px solid transparent', transition:'all 0.1s' }}
-                onClick={() => { setActiveId(a.id); setSection('general'); }}>
+                onClick={() => { setActiveId(a.id); setSection('general'); if (isMobile) setSidebarOpen(false); }}>
                 <div style={{ fontSize:12, color:on?C.text:C.mid, fontWeight:on?600:400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', textAlign:rtl?'right':'left' }}>
                   {a.name || '(Untitled)'}
                 </div>
@@ -638,11 +688,50 @@ export default function TechAssess() {
         </div>
       </div>
 
+      {/* Mobile sidebar backdrop */}
+      {isMobile && sidebarOpen && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Close menu"
+          style={{
+            position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', zIndex:999,
+          }}
+          onClick={() => setSidebarOpen(false)}
+          onKeyDown={e => e.key === 'Enter' && setSidebarOpen(false)}
+        />
+      )}
+
       {/* ── Main ─────────────────────────────────────────────────────────── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{
+        flex:1,
+        minWidth: isMobile ? 0 : undefined,
+        display:'flex',
+        flexDirection:'column',
+        overflow:'hidden',
+      }}>
+
+        {/* Mobile: menu button */}
+        {isMobile && (
+          <div style={{ borderBottom:'1px solid '+C.border, display:'flex', alignItems:'center', padding:'10px 14px', gap:10, background:C.tbBg, flexDirection:rtl?'row-reverse':'row' }}>
+            <button style={{ ...s.btn(), padding:'8px 12px', fontSize:18 }} onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
+            <span style={{ fontSize:14, fontWeight:600, color:C.text }}>Mezan AI</span>
+          </div>
+        )}
 
         {/* Toolbar */}
-        <div style={{ height:50, borderBottom:'1px solid '+C.border, display:'flex', alignItems:'center', padding:'0 18px', gap:9, flexShrink:0, background:C.tbBg, flexDirection:rtl?'row-reverse':'row' }}>
+        <div style={{
+          minHeight:50,
+          borderBottom:'1px solid '+C.border,
+          display:'flex',
+          alignItems:'center',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+          padding: isMobile ? '10px 14px' : '0 18px',
+          gap:9,
+          flexShrink:0,
+          background:C.tbBg,
+          flexDirection:rtl?'row-reverse':'row',
+        }}>
           {active ? (
             <>
               <span style={{ fontSize:13, fontWeight:600, color:C.text, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
@@ -680,17 +769,56 @@ export default function TechAssess() {
             <button style={{ ...s.btn('primary'), marginTop:8, padding:'9px 20px', fontSize:12 }} onClick={newAssessment}>{t.newAssessment}</button>
           </div>
         ) : (
-          <div style={{ flex:1, display:'flex', overflow:'hidden', flexDirection:rtl?'row-reverse':'row' }}>
+          <div style={{
+            flex:1,
+            display:'flex',
+            flexDirection: isMobile ? 'column' : (rtl?'row-reverse':'row'),
+            overflow:'hidden',
+            minHeight:0,
+          }}>
 
             {/* Section nav */}
-            <div style={{ width:192, minWidth:192, borderRight:rtl?'none':'1px solid '+C.border, borderLeft:rtl?'1px solid '+C.border:'none', display:'flex', flexDirection:'column', background:C.navBg, overflowY:'auto' }}>
-              <div style={{ flex:1, padding:'12px 7px 6px' }}>
-                <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.15em', color:C.dim, textTransform:'uppercase', padding:'0 7px 6px', textAlign:rtl?'right':'left' }}>{t.sections}</div>
+            <div style={{
+              ...(isMobile ? {
+                flexShrink:0,
+                borderBottom:'1px solid '+C.border,
+                background:C.navBg,
+                overflowX:'auto',
+                overflowY:'hidden',
+                padding:'8px 12px',
+                display:'flex',
+                gap:6,
+                flexDirection: rtl ? 'row-reverse' : 'row',
+                WebkitOverflowScrolling: 'touch',
+              } : {
+                width:192, minWidth:192,
+                borderRight:rtl?'none':'1px solid '+C.border,
+                borderLeft:rtl?'1px solid '+C.border:'none',
+                display:'flex', flexDirection:'column', background:C.navBg, overflowY:'auto',
+              }),
+            }}>
+              <div style={ isMobile ? { display:'flex', gap:6, flex:1, minWidth:0 } : { flex:1, padding:'12px 7px 6px' } }>
+                {!isMobile && <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.15em', color:C.dim, textTransform:'uppercase', padding:'0 7px 6px', textAlign:rtl?'right':'left' }}>{t.sections}</div>}
                 {SECTIONS_DEF.map(sec => {
                   const on = section === sec.id;
                   return (
                     <div key={sec.id}
-                      style={{ padding:'6px 9px', borderRadius:5, cursor:'pointer', marginBottom:1, background:on?C.bg3:'transparent', color:on?C.navOn:C.navText, fontSize:11, display:'flex', alignItems:'center', gap:7, border:on?'1px solid '+C.border2:'1px solid transparent', transition:'all 0.1s', flexDirection:rtl?'row-reverse':'row' }}
+                      style={{
+                        ...(isMobile ? { flexShrink:0, whiteSpace: 'nowrap' } : {}),
+                        padding: isMobile ? '6px 12px' : '6px 9px',
+                        borderRadius:5,
+                        cursor:'pointer',
+                        marginBottom: isMobile ? 0 : 1,
+                        background:on?C.bg3:'transparent',
+                        color:on?C.navOn:C.navText,
+                        fontSize:11,
+                        display:'flex',
+                        alignItems:'center',
+                        gap:7,
+                        border:on?'1px solid '+C.border2:'1px solid transparent',
+                        transition:'all 0.1s',
+                        flexDirection:rtl?'row-reverse':'row',
+                      }}
                       onClick={() => setSection(sec.id)}>
                       <span style={{ fontSize:11, opacity:0.7, width:13, textAlign:'center', flexShrink:0 }}>{sec.icon}</span>
                       {t[sec.labelKey]}
@@ -701,7 +829,7 @@ export default function TechAssess() {
             </div>
 
             {/* Content */}
-            <div style={{ flex:1, overflowY:'auto', padding:'22px 30px', background:C.bg }}>
+            <div style={{ flex:1, overflowY:'auto', padding: isMobile ? '16px 14px' : '22px 30px', background:C.bg, minHeight:0 }}>
               <div style={{ fontSize:15, fontWeight:700, color:C.text, marginBottom:14, display:'flex', alignItems:'center', gap:8 }}>
                 <span>{secDef?.icon}</span>
                 <span>{t[secDef?.labelKey]}</span>

@@ -9,3 +9,13 @@ body {
   height: 100%;
   overflow: hidden;
 }
+
+/* Mobile-responsive: two-column grids become single column */
+@media (max-width: 768px) {
+  .tech-assess-g2 {
+    grid-template-columns: 1fr !important;
+  }
+  html, body {
+    overflow: auto;
+  }
+}
