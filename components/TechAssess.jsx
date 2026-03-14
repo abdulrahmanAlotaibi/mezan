@@ -632,9 +632,9 @@ export default function TechAssess() {
         {/* Logo */}
         <div style={{ padding:'15px 13px 10px', borderBottom:'1px solid '+C.border }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexDirection:rtl?'row-reverse':'row' }}>
-            <img src="/logo.svg" alt="Mezan" style={{ width:36, height:36, borderRadius:7, flexShrink:0, display:'block' }} />
+            <img src="/logo.svg" alt={t.appName} style={{ width:36, height:36, borderRadius:7, flexShrink:0, display:'block' }} />
             <div>
-              <div style={{ fontSize:13, fontWeight:700, color:C.text, letterSpacing:'0.01em' }}>Mezan AI</div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, letterSpacing: rtl ? 0 : '0.01em' }}>{t.appName}</div>
               <div style={{ fontSize:9, color:C.dim, letterSpacing:'0.08em' }}>TECH ASSESSMENT</div>
             </div>
           </div>
@@ -711,11 +711,17 @@ export default function TechAssess() {
         overflow:'hidden',
       }}>
 
-        {/* Mobile: menu button */}
+        {/* Mobile: menu, logo, theme & language */}
         {isMobile && (
-          <div style={{ borderBottom:'1px solid '+C.border, display:'flex', alignItems:'center', padding:'10px 14px', gap:10, background:C.tbBg, flexDirection:rtl?'row-reverse':'row' }}>
+          <div style={{ borderBottom:'1px solid '+C.border, display:'flex', alignItems:'center', padding:'10px 14px', gap:8, background:C.tbBg, flexDirection:rtl?'row-reverse':'row', flexWrap:'wrap' }}>
             <button style={{ ...s.btn(), padding:'8px 12px', fontSize:18 }} onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
-            <span style={{ fontSize:14, fontWeight:600, color:C.text }}>Mezan AI</span>
+            <span style={{ fontSize:14, fontWeight:600, color:C.text, flex:1, minWidth:0 }}>{t.appName}</span>
+            <button style={{ ...s.btn(), padding:'6px 10px', fontSize:12 }} onClick={toggleTheme} title={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}>
+              {theme === 'dark' ? '☀' : '☾'}
+            </button>
+            <button style={{ ...s.btn(), padding:'6px 10px', fontSize:12 }} onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} title={lang === 'en' ? 'العربية' : 'English'}>
+              {lang === 'en' ? 'ع' : 'En'}
+            </button>
           </div>
         )}
 
@@ -762,8 +768,8 @@ export default function TechAssess() {
 
         {!active ? (
           <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, background:C.bg }}>
-            <img src="/logo.svg" alt="Mezan" style={{ width:52, height:52, borderRadius:13, display:'block' }} />
-            <div style={{ fontSize:15, fontWeight:700, color:C.text }}>Mezan AI</div>
+            <img src="/logo.svg" alt={t.appName} style={{ width:52, height:52, borderRadius:13, display:'block' }} />
+            <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{t.appName}</div>
             <div style={{ fontSize:12, color:C.mid, fontWeight:500 }}>{t.noAssessmentOpen}</div>
             <div style={{ fontSize:11, color:C.dim, maxWidth:320, textAlign:'center', lineHeight:1.6 }}>{t.createOrSelect}</div>
             <button style={{ ...s.btn('primary'), marginTop:8, padding:'9px 20px', fontSize:12 }} onClick={newAssessment}>{t.newAssessment}</button>
