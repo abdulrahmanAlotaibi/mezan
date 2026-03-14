@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { T } from '../lib/i18n';
 import {
   uid, fmtDate,
@@ -514,7 +515,7 @@ export default function TechAssess() {
   const [section, setSection]   = useState('general');
   const [search, setSearch]     = useState('');
   const [lang, setLang]         = useState('en');
-  const [theme, setTheme]       = useState('dark');
+  const [theme, setTheme]       = useState('light');
   const [saved, setSaved]       = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -631,13 +632,15 @@ export default function TechAssess() {
 
         {/* Logo */}
         <div style={{ padding:'15px 13px 10px', borderBottom:'1px solid '+C.border }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexDirection:rtl?'row-reverse':'row' }}>
-            <img src="/logo.svg" alt={t.appName} style={{ width:36, height:36, borderRadius:7, flexShrink:0, display:'block' }} />
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:C.text, letterSpacing: rtl ? 0 : '0.01em' }}>{t.appName}</div>
-              <div style={{ fontSize:9, color:C.dim, letterSpacing:'0.08em' }}>TECH ASSESSMENT</div>
+          <Link href="/" style={{ textDecoration:'none', color:'inherit', display:'block', marginBottom:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, flexDirection:rtl?'row-reverse':'row' }}>
+              <img src="/logo.svg" alt={t.appName} style={{ width:36, height:36, borderRadius:7, flexShrink:0, display:'block' }} />
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.text, letterSpacing: rtl ? 0 : '0.01em' }}>{t.appName}</div>
+                <div style={{ fontSize:9, color:C.dim, letterSpacing:'0.08em' }}>TECH ASSESSMENT</div>
+              </div>
             </div>
-          </div>
+          </Link>
           <button style={{ ...s.btn('primary'), width:'100%', justifyContent:'center', fontSize:12 }} onClick={newAssessment}>
             {t.newAssessment}
           </button>
@@ -715,7 +718,7 @@ export default function TechAssess() {
         {isMobile && (
           <div style={{ borderBottom:'1px solid '+C.border, display:'flex', alignItems:'center', padding:'10px 14px', gap:8, background:C.tbBg, flexDirection:rtl?'row-reverse':'row', flexWrap:'wrap' }}>
             <button style={{ ...s.btn(), padding:'8px 12px', fontSize:18 }} onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
-            <span style={{ fontSize:14, fontWeight:600, color:C.text, flex:1, minWidth:0 }}>{t.appName}</span>
+            <Link href="/" style={{ fontSize:14, fontWeight:600, color:C.text, flex:1, minWidth:0, textDecoration:'none' }}>{t.appName}</Link>
             <button style={{ ...s.btn(), padding:'6px 10px', fontSize:12 }} onClick={toggleTheme} title={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}>
               {theme === 'dark' ? '☀' : '☾'}
             </button>
@@ -768,8 +771,10 @@ export default function TechAssess() {
 
         {!active ? (
           <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, background:C.bg }}>
-            <img src="/logo.svg" alt={t.appName} style={{ width:52, height:52, borderRadius:13, display:'block' }} />
-            <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{t.appName}</div>
+            <Link href="/" style={{ textDecoration:'none', color:'inherit', display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+              <img src="/logo.svg" alt={t.appName} style={{ width:52, height:52, borderRadius:13, display:'block' }} />
+              <div style={{ fontSize:15, fontWeight:700, color:C.text }}>{t.appName}</div>
+            </Link>
             <div style={{ fontSize:12, color:C.mid, fontWeight:500 }}>{t.noAssessmentOpen}</div>
             <div style={{ fontSize:11, color:C.dim, maxWidth:320, textAlign:'center', lineHeight:1.6 }}>{t.createOrSelect}</div>
             <button style={{ ...s.btn('primary'), marginTop:8, padding:'9px 20px', fontSize:12 }} onClick={newAssessment}>{t.newAssessment}</button>
