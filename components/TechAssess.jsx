@@ -14,27 +14,27 @@ import { HealthPanel } from './HealthPanel';
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 const DARK = {
   bg:      '#09090d', bg2: '#0c0e15', bg3: '#131720',
-  border:  '#14161f', border2: '#1d2235',
-  text:    '#e2e8f0', mid: '#4a5568',  dim: '#23293a',
-  accent:  '#6366f1',
-  navBg:   '#07080c', navText: '#2e3a4a', navOn: '#e2e8f0',
+  border:  '#1a1a1a', border2: '#2a2a2a',
+  text:    '#e2e8f0', mid: '#4a5568',  dim: '#2a2a2a',
+  accent:  '#ffffff', accentFg: '#000000',
+  navBg:   '#07080c', navText: '#3a3a3a', navOn: '#e2e8f0',
   sbBg:    '#09090d',
   inputBg: '#0c0e15', inputText: '#e2e8f0',
   tbBg:    '#09090d',
-  lbl:     '#2e3a4a',
+  lbl:     '#3a3a3a',
   cardBg:  '#0c0e15',
-  pillOff: 'transparent', pillOffText: '#2e3a4a', pillOffBorder: '#1d2235',
-  chkOff:  '#23293a',
+  pillOff: 'transparent', pillOffText: '#3a3a3a', pillOffBorder: '#2a2a2a',
+  chkOff:  '#2a2a2a',
   hlBg:    'rgba(0,0,0,0.15)',
 };
 const LIGHT = {
   bg:      '#ffffff', bg2: '#f8fafc', bg3: '#f1f5f9',
   border:  '#e2e8f0', border2: '#cbd5e1',
-  text:    '#0f172a', mid: '#64748b',  dim: '#94a3b8',
-  accent:  '#6366f1',
-  navBg:   '#f8fafc', navText: '#94a3b8', navOn: '#0f172a',
+  text:    '#0a0a0a', mid: '#64748b',  dim: '#94a3b8',
+  accent:  '#000000', accentFg: '#ffffff',
+  navBg:   '#f8fafc', navText: '#94a3b8', navOn: '#0a0a0a',
   sbBg:    '#f1f5f9',
-  inputBg: '#ffffff', inputText: '#0f172a',
+  inputBg: '#ffffff', inputText: '#0a0a0a',
   tbBg:    '#ffffff',
   lbl:     '#64748b',
   cardBg:  '#f8fafc',
@@ -53,16 +53,19 @@ function makeS(C) {
     fg:   { marginBottom:16 },
     card: { background:C.cardBg, border:'1px solid '+C.border, borderRadius:9, padding:13, marginBottom:10 },
     div:  { borderTop:'1px solid '+C.border, margin:'18px 0' },
-    pill: (on, col='#6366f1') => ({
-      padding:'4px 11px', borderRadius:20, fontSize:11, cursor:'pointer',
-      border:`1px solid ${on ? col : C.border2}`,
-      background: on ? col+'20' : C.pillOff,
-      color: on ? col : C.pillOffText,
-      transition:'all 0.15s', fontFamily:'inherit',
-    }),
+    pill: (on, col) => {
+      const c = col || C.accent;
+      return {
+        padding:'4px 11px', borderRadius:20, fontSize:11, cursor:'pointer',
+        border:`1px solid ${on ? c : C.border2}`,
+        background: on ? c : C.pillOff,
+        color: on ? (col ? '#ffffff' : C.accentFg) : C.pillOffText,
+        transition:'all 0.15s', fontFamily:'inherit',
+      };
+    },
     btn: (v='gh') => {
       const m = {
-        primary: { bg:'#6366f1', br:'#6366f1', col:'white' },
+        primary: { bg:C.accent, br:C.accent, col:C.accentFg },
         danger:  { bg:'rgba(239,68,68,0.08)', br:'rgba(239,68,68,0.25)', col:'#ef4444' },
         gh:      { bg:C.bg3, br:C.border2, col:C.mid },
       };
@@ -120,12 +123,13 @@ function Sel({ label, value, onChange, options, placeholder, s }) {
   );
 }
 
-function PillsGroup({ label, values = [], options, onChange, color = '#6366f1', s }) {
+function PillsGroup({ label, values = [], options, onChange, color, s, C: CC }) {
+  const resolvedColor = color || (CC?.accent ?? '#000000');
   return (
     <Field label={label} s={s}>
       <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
         {options.map(o => (
-          <button key={o} style={s.pill(values.includes(o), color)}
+          <button key={o} style={s.pill(values.includes(o), resolvedColor)}
             onClick={() => onChange(values.includes(o) ? values.filter(x => x !== o) : [...values, o])}>
             {o}
           </button>
@@ -135,12 +139,13 @@ function PillsGroup({ label, values = [], options, onChange, color = '#6366f1', 
   );
 }
 
-function PillOne({ label, value, options, onChange, color = '#6366f1', s }) {
+function PillOne({ label, value, options, onChange, color, s, C: CC }) {
+  const resolvedColor = color || (CC?.accent ?? '#000000');
   return (
     <Field label={label} s={s}>
       <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
         {options.map(o => (
-          <button key={o} style={s.pill(value === o, color)}
+          <button key={o} style={s.pill(value === o, resolvedColor)}
             onClick={() => onChange(value === o ? '' : o)}>
             {o}
           </button>
@@ -171,11 +176,11 @@ function SectionGeneral({ a, upd, t, s, C }) {
       {(a.vendor === '— Internal Team —' || a.vendor === 'Other (specify below)') && (
         <Inp label="Specify" value={a.vendorCustom} onChange={v => upd('vendorCustom', v)} placeholder="Enter vendor or team name" s={s} C={C} />
       )}
-      <PillsGroup label={t.assessorsRoles} values={a.assessors || []} options={ASSESSOR_OPTIONS} onChange={v => upd('assessors', v)} s={s} />
+      <PillsGroup label={t.assessorsRoles} values={a.assessors || []} options={ASSESSOR_OPTIONS} onChange={v => upd('assessors', v)} s={s} C={C} />
       <Inp label={t.hldArtifacts} value={a.artifacts} onChange={v => upd('artifacts', v)} placeholder="Confluence page, SharePoint link, or Jira epic" s={s} C={C} />
       <PillsGroup label={t.assessmentScope} values={a.scope || []}
         options={['Architecture Review','Security Assessment','Cost Analysis','Integration Assessment','Data Assessment','Compliance Review','PoC Evaluation']}
-        onChange={v => upd('scope', v)} s={s} />
+        onChange={v => upd('scope', v)} s={s} C={C} />
       <G2>
         <Sel label={t.engagementType} value={a.engagementType} onChange={v => upd('engagementType', v)}
           options={['New Solution Evaluation','Replacement / Migration','Upgrade / Version Change','Integration Project','PoC Validation','Post-Implementation Review']}
@@ -187,7 +192,7 @@ function SectionGeneral({ a, upd, t, s, C }) {
         </Field>
       </G2>
       {a.status === 'go_to_poc' && (
-        <div style={{ background:'rgba(99,102,241,0.05)', border:'1px solid rgba(99,102,241,0.18)', borderRadius:8, padding:'12px 13px', marginBottom:18 }}>
+        <div style={{ background:C.bg3, border:'1px solid '+C.border2, borderRadius:8, padding:'12px 13px', marginBottom:18 }}>
           <div style={s.lbl}>{t.pocApproved}</div>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <input value={a.hldLink || ''} onChange={e => upd('hldLink', e.target.value)}
@@ -196,7 +201,7 @@ function SectionGeneral({ a, upd, t, s, C }) {
               onBlur={e => e.target.style.borderColor = C.border} />
             {a.hldLink && (
               <a href={a.hldLink} target="_blank" rel="noreferrer"
-                style={{ ...s.btn(), textDecoration:'none', color:'#818cf8', border:'1px solid rgba(99,102,241,0.3)', background:'rgba(99,102,241,0.08)' }}>
+                style={{ ...s.btn(), textDecoration:'none' }}>
                 {t.openHld}
               </a>
             )}
@@ -211,7 +216,7 @@ function SectionSummary({ a, upd, t, s }) {
   return (
     <div>
       <Txa label="Executive Summary" value={a.summary} onChange={v => upd('summary', v)}
-        placeholder="Describe the solution, its purpose, and key architectural highlights..." rows={5} s={s} C={{accent:'#6366f1',border:s.inp.border.replace('1px solid ','')}} />
+        placeholder="Describe the solution, its purpose, and key architectural highlights..." rows={5} s={s} C={C} />
       <Field label="Readiness Verdict" s={s}>
         <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
           {Object.entries(READINESS).map(([k, r]) => (
@@ -225,7 +230,7 @@ function SectionSummary({ a, upd, t, s }) {
       {a.readiness && (
         <Txa label="Justification" value={a.readinessJustification}
           onChange={v => upd('readinessJustification', v)}
-          placeholder="Explain the readiness decision..." rows={3} s={s} C={{accent:'#6366f1',border:s.inp.border.replace('1px solid ','')}} />
+          placeholder="Explain the readiness decision..." rows={3} s={s} C={C} />
       )}
     </div>
   );
@@ -250,11 +255,11 @@ function SectionInfrastructure({ a, upd, t, s, C }) {
     <div>
       <PillOne label={t.hostingEnv} value={a.hostingEnv}
         options={['SaaS — Deployed via Vendor','Cloud — Self-Managed (IaaS/PaaS)','Hybrid','On-Premises']}
-        onChange={v => upd('hostingEnv', v)} s={s} />
+        onChange={v => upd('hostingEnv', v)} s={s} C={C} />
       {a.hostingEnv === 'On-Premises' && (
         <PillOne label={t.onPremDeployment} value={a.onPremModel}
           options={['Bare Metal','Virtual Machines (VMware/HyperV)','Containers (Docker)','Kubernetes (K8s)','OpenShift']}
-          onChange={v => upd('onPremModel', v)} s={s} />
+          onChange={v => upd('onPremModel', v)} s={s} C={C} />
       )}
       <Txa label={t.deploymentDetails} value={a.deploymentModel} onChange={v => upd('deploymentModel', v)}
         placeholder="CI/CD pipeline, deployment strategy, DR setup, environment topology..." rows={4} s={s} C={C} />
@@ -278,7 +283,7 @@ function SectionObservability({ a, upd, t, s, C }) {
     <div>
       <PillsGroup label={t.monitoringCaps} values={a.monitoringCaps || []}
         options={['Logs','Metrics','Traces','Alerting','Dashboards','APM','Health Checks','Audit Trail','SIEM Integration']}
-        onChange={v => upd('monitoringCaps', v)} s={s} />
+        onChange={v => upd('monitoringCaps', v)} s={s} C={C} />
       <Sel label={t.monitoringPlatform} value={a.monitoringTool} onChange={v => upd('monitoringTool', v)}
         options={['Datadog','Dynatrace','Splunk','Grafana + Prometheus','Azure Monitor','AWS CloudWatch','Google Cloud Ops','ELK Stack','New Relic','AppDynamics','Custom / In-house','None']}
         placeholder="— Select platform —" s={s} />
@@ -293,12 +298,12 @@ function SectionIntegration({ a, upd, t, s, C }) {
     <div>
       <PillsGroup label={t.integrationPatterns} values={a.integrationPatterns || []}
         options={['REST API','GraphQL','SOAP / Web Services','Event-Driven / Kafka','Webhooks','File Transfer (SFTP/S3)','Database Sync','iPaaS (MuleSoft/Boomi)','SDK / Library','Batch ETL']}
-        onChange={v => upd('integrationPatterns', v)} s={s} />
+        onChange={v => upd('integrationPatterns', v)} s={s} C={C} />
       <PillOne label={t.integrationComplexity} value={a.integrationComplexity}
         options={['Low — Minimal','Medium — Moderate','High — Complex','Critical — Mission-Critical']}
         onChange={v => upd('integrationComplexity', v)}
-        color={a.integrationComplexity?.includes('Critical') ? '#ef4444' : a.integrationComplexity?.includes('High') ? '#f59e0b' : '#6366f1'}
-        s={s} />
+        color={a.integrationComplexity?.includes('Critical') ? '#ef4444' : a.integrationComplexity?.includes('High') ? '#f59e0b' : C.accent}
+        s={s} C={C} />
       <Txa label={t.integrationDetails} value={a.integration} onChange={v => upd('integration', v)}
         placeholder="Systems to integrate, data flows, transformation requirements, API versioning strategy..." rows={4} s={s} C={C} />
       <div style={s.div} />
@@ -306,7 +311,7 @@ function SectionIntegration({ a, upd, t, s, C }) {
       <PillOne label={t.ssoSupported} value={a.ssoSupported}
         options={['Yes — Fully Supported','Partial — With Limitations','Planned — Roadmap','No — Not Supported']}
         onChange={v => upd('ssoSupported', v)}
-        color={a.ssoSupported === 'No — Not Supported' ? '#ef4444' : '#6366f1'} s={s} />
+        color={a.ssoSupported === 'No — Not Supported' ? '#ef4444' : C.accent} s={s} C={C} />
       {a.ssoSupported && a.ssoSupported !== 'No — Not Supported' && (
         <PillOne label={t.ssoProtocol} value={a.ssoProtocol}
           options={['SAML 2.0','OIDC / OAuth 2.0','LDAP / AD','Kerberos','Custom']}
@@ -323,12 +328,12 @@ function SectionData({ a, upd, t, s, C }) {
     <div>
       <PillsGroup label={t.regulatoryCompliance} values={a.complianceFrameworks || []}
         options={['SAMA','NCA','PDPL','GDPR','HIPAA','PCI-DSS','ISO 27001','SOC 2','NIST CSF','CIS Controls']}
-        onChange={v => upd('complianceFrameworks', v)} color="#10b981" s={s} />
+        onChange={v => upd('complianceFrameworks', v)} color="#10b981" s={s} C={C} />
       <Txa label={t.complianceNotes} value={a.regulatory} onChange={v => upd('regulatory', v)}
         placeholder="Residency requirements, audit obligations, data classification..." rows={3} s={s} C={C} />
       <div style={s.div} />
       <PillOne label={t.migrationRequired} value={a.migrationRequired}
-        options={['Yes','No','TBD']} onChange={v => upd('migrationRequired', v)} s={s} />
+        options={['Yes','No','TBD']} onChange={v => upd('migrationRequired', v)} s={s} C={C} />
       {a.migrationRequired === 'Yes' && (
         <Txa label={t.migrationDetails} value={a.dataMigration} onChange={v => upd('dataMigration', v)}
           placeholder="Migration scope, volumes, tooling, rollback strategy, cutover plan..." rows={4} s={s} C={C} />
@@ -353,9 +358,9 @@ function SectionSecurity({ a, upd, t, s, C }) {
         const on = !!(a.security?.[key]);
         return (
           <div key={key}
-            style={{ display:'flex', alignItems:'flex-start', gap:8, padding:'8px 10px', borderRadius:6, marginBottom:4, cursor:'pointer', background:on ? 'rgba(99,102,241,0.06)' : 'transparent', border:on ? '1px solid rgba(99,102,241,0.18)' : '1px solid transparent', transition:'all 0.12s' }}
+            style={{ display:'flex', alignItems:'flex-start', gap:8, padding:'8px 10px', borderRadius:6, marginBottom:4, cursor:'pointer', background:on ? C.accent+'12' : 'transparent', border:on ? '1px solid '+C.accent+'40' : '1px solid transparent', transition:'all 0.12s' }}
             onClick={() => upd('security', { ...(a.security || {}), [key]: !on })}>
-            <div style={{ width:15, height:15, borderRadius:4, flexShrink:0, marginTop:2, background:on ? '#6366f1' : 'transparent', border:on ? '1px solid #6366f1' : '1px solid '+C.chkOff, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
+            <div style={{ width:15, height:15, borderRadius:4, flexShrink:0, marginTop:2, background:on ? C.accent : 'transparent', border:on ? '1px solid '+C.accent : '1px solid '+C.chkOff, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
               {on && <span style={{ fontSize:9, color:'white', fontWeight:700 }}>✓</span>}
             </div>
             <div style={{ flex:1 }}>
@@ -576,10 +581,10 @@ export default function TechAssess() {
 
         {/* Logo */}
         <div style={{ padding:'15px 13px 10px', borderBottom:'1px solid '+C.border }}>
-          <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:12, flexDirection:rtl?'row-reverse':'row' }}>
-            <div style={{ width:30, height:30, background:'linear-gradient(135deg,#6366f1,#a78bfa)', borderRadius:7, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:900, color:'white', flexShrink:0 }}>M</div>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexDirection:rtl?'row-reverse':'row' }}>
+            <img src="/logo.svg" alt="Mezan" style={{ width:36, height:36, borderRadius:7, flexShrink:0, display:'block' }} />
             <div>
-              <div style={{ fontSize:13, fontWeight:700, color:'#6366f1', letterSpacing:'0.01em' }}>Mezan AI</div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.text, letterSpacing:'0.01em' }}>Mezan AI</div>
               <div style={{ fontSize:9, color:C.dim, letterSpacing:'0.08em' }}>TECH ASSESSMENT</div>
             </div>
           </div>
@@ -668,7 +673,7 @@ export default function TechAssess() {
 
         {!active ? (
           <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, background:C.bg }}>
-            <div style={{ width:52, height:52, background:'linear-gradient(135deg,#6366f1,#a78bfa)', borderRadius:13, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, fontWeight:900, color:'white' }}>M</div>
+            <img src="/logo.svg" alt="Mezan" style={{ width:52, height:52, borderRadius:13, display:'block' }} />
             <div style={{ fontSize:15, fontWeight:700, color:C.text }}>Mezan AI</div>
             <div style={{ fontSize:12, color:C.mid, fontWeight:500 }}>{t.noAssessmentOpen}</div>
             <div style={{ fontSize:11, color:C.dim, maxWidth:320, textAlign:'center', lineHeight:1.6 }}>{t.createOrSelect}</div>

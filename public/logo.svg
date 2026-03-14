@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" fill="#000000"/>
+  <text
+    x="200"
+    y="225"
+    font-family="'Tajawal','Arabic Typesetting','Traditional Arabic',Tahoma,Arial,sans-serif"
+    font-size="148"
+    font-weight="900"
+    fill="#ffffff"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    letter-spacing="-2"
+  >ميزان</text>
+</svg>
