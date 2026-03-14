@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { deriveIssues } from '../lib/logic';
 import { SECTIONS_DEF } from '../lib/constants';
 
-export const HealthPanel = ({ a, onNavigate, rtl }) => {
+export const HealthPanel = ({ a, onNavigate, rtl, theme, C }) => {
+  const hlBg   = theme === 'light' ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.15)';
+  const midCol = C?.mid || '#4a5568';
   const [open, setOpen] = useState(false);
   const issues = deriveIssues(a);
   const errors = issues.filter(i => i.sev === "error");
@@ -37,7 +39,7 @@ export const HealthPanel = ({ a, onNavigate, rtl }) => {
         <span style={{ fontSize: 10, color: "#4a5568", marginLeft: rtl ? "0" : "auto", marginRight: rtl ? "auto" : "0" }}>{open ? "▲" : "▼"}</span>
       </div>
       {open && (
-        <div style={{ padding: "10px 13px", background: "rgba(0,0,0,0.15)", maxHeight: 280, overflowY: "auto" }}>
+        <div style={{ padding: "10px 13px", background: hlBg, maxHeight: 280, overflowY: "auto" }}>
           {[...errors, ...warnings, ...infos].map((iss, i) => {
             const col = iss.sev === "error" ? "#ef4444" : iss.sev === "warning" ? "#f59e0b" : "#818cf8";
             const icon = iss.sev === "error" ? "⛔" : iss.sev === "warning" ? "⚠" : "ℹ";
@@ -50,7 +52,7 @@ export const HealthPanel = ({ a, onNavigate, rtl }) => {
                 <span style={{ fontSize: 10, color: col, flexShrink: 0, marginTop: 1 }}>{icon}</span>
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: 11, color: col, lineHeight: 1.4, textAlign: rtl ? "right" : "left", display: "block" }}>{iss.msg}</span>
-                  <span style={{ fontSize: 9, color: "#4a5568", fontStyle: "italic" }}>→ {sectionLabel || iss.section}</span>
+                  <span style={{ fontSize: 9, color: midCol, fontStyle: "italic" }}>→ {sectionLabel || iss.section}</span>
                 </div>
               </div>
             );
