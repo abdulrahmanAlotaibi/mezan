@@ -212,7 +212,7 @@ function SectionGeneral({ a, upd, t, s, C }) {
   );
 }
 
-function SectionSummary({ a, upd, t, s }) {
+function SectionSummary({ a, upd, t, s, C }) {
   return (
     <div>
       <Txa label="Executive Summary" value={a.summary} onChange={v => upd('summary', v)}
